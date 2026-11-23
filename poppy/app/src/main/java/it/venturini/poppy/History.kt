@@ -141,6 +141,7 @@ fun HistoryScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
     var sheet by remember { mutableStateOf<SheetReq?>(null) }
     var sessionDlg by remember { mutableStateOf<Session?>(null) }
     var tab by remember { mutableStateOf("feed") }
+    val ctx = androidx.compose.ui.platform.LocalContext.current
     val oz = vm.oz
     val now = nowMs()
     val sod = startOfDay(now)
@@ -203,15 +204,15 @@ fun HistoryScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
                         val ml = dayItems.filter { it.kind == "biberon" }.sumOf { it.entry?.ml ?: 0 }
                         var sl = 0L
                         for (e in vm.entries) if (e.type == "sonno") sl += overlapMs(e.t, e.end, day, minOf(day + 86400000L, now))
-                        stringResource(R.string.hist_meals, ms.size) + " \u00b7 " + Math.round(sec / 60.0) + "\u2032 " + stringResource(R.string.hist_breast_short) +
-                            (if (ml > 0) " \u00b7 " + fmtVol(ml, oz) else "") + (if (sl > 0) " \u00b7 " + hShort(sl) + " " + stringResource(R.string.tile_nap).lowercase() else "")
+                        ctx.getString(R.string.hist_meals, ms.size) + " \u00b7 " + Math.round(sec / 60.0) + "\u2032 " + ctx.getString(R.string.hist_breast_short) +
+                            (if (ml > 0) " \u00b7 " + fmtVol(ml, oz) else "") + (if (sl > 0) " \u00b7 " + hShort(sl) + " " + ctx.getString(R.string.tile_nap).lowercase() else "")
                     }
                     "pump" -> fmtVol(dayItems.sumOf { it.entry?.ml ?: 0 }, oz)
                     else -> dayItems.size.toString()
                 }
                 val label = when (day) {
-                    sod -> stringResource(R.string.today)
-                    startOfDay(sod - 1) -> stringResource(R.string.yesterday)
+                    sod -> ctx.getString(R.string.today)
+                    startOfDay(sod - 1) -> ctx.getString(R.string.yesterday)
                     else -> dayStr(day)
                 }
                 item(key = "d$day$tab") {
