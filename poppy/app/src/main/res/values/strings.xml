@@ -228,4 +228,36 @@
     <string name="unlocked_solids">New section unlocked: Weaning (Milestones tab)</string>
     <string name="vitd">Vitamin D</string>
     <string name="w_last">Last feed %1$s</string>
+    <string name="tab_more">More</string>
+    <string name="m_health">Health &amp; medicines</string>
+    <string name="m_growth">Milestones &amp; weaning</string>
+    <string name="m_support">Support Poppy</string>
+    <string name="m_ideas">Ideas &amp; requests</string>
+    <string name="ago_5">5 min ago</string>
+    <string name="ago_15">15 min ago</string>
+    <string name="ago_30">30 min ago</string>
+    <string name="ago_60">1 h ago</string>
+    <string name="time_h">Hours</string>
+    <string name="time_m">Min</string>
+    <string name="save_failed">Could not save. Check your connection.</string>
+    <string name="sync_error">Sync problem</string>
+    <string name="support_watch_ad">Watch an ad to support Poppy</string>
+    <string name="ad_loading">Loading ad…</string>
+    <string name="ad_thanks">Thank you for your support! 💛</string>
+    <string name="ad_unavailable">No ad available right now, try again later</string>
+    <string name="support_or_tip">Or leave a tip</string>
+    <string name="ads_note">Ads are optional and only shown when you tap the button.</string>
+    <string name="ideas_intro">Suggest an improvement. Ideas that reach at least 10 votes get implemented.</string>
+    <string name="idea_hint">Your idea (max 200 characters)</string>
+    <string name="idea_send">Send idea</string>
+    <string name="idea_vote">Vote</string>
+    <string name="idea_voted">Voted</string>
+    <string name="idea_planned">Planned</string>
+    <string name="idea_done">Done</string>
+    <string name="idea_goal">%1$d / 10 votes</string>
+    <string name="idea_none">No ideas yet — be the first!</string>
+    <string name="idea_report">Report</string>
+    <string name="idea_thanks">Idea sent, thanks!</string>
+    <string name="idea_report_subject">Poppy – report idea</string>
+    <string name="contact_email" translatable="false">fede99311@gmail.com</string>
 </resources>

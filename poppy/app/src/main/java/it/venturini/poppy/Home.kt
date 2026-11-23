@@ -37,6 +37,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -75,8 +76,6 @@ fun HomeScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
 
     val entries = vm.entries
     val oz = vm.oz
-    val savedText = stringResource(R.string.saved)
-    val undoText = stringResource(R.string.undo)
 
     val timer = baby.timer
     val running = timer?.start != null
@@ -88,7 +87,6 @@ fun HomeScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
     val pumpMl = d.items.filter { it.t >= sod && it.kind == "tiralatte" }.sumOf { it.entry?.ml ?: 0 }
     val pees = d.items.count { it.t >= sod && it.kind == "pannolino" && it.entry?.kind != "cacca" }
     val poops = d.items.count { it.t >= sod && it.kind == "pannolino" && it.entry?.kind != "pipi" }
-    val vitDone = entries.any { it.type == "farmaco" && it.name == VITD && it.t >= sod }
     var sleepMs = 0L
     for (e in entries) if (e.type == "sonno") {
         sleepMs += (minOf(e.end, now) - maxOf(e.t, sod)).coerceAtLeast(0L)
@@ -98,14 +96,7 @@ fun HomeScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
 
     val visible = d.items.filter { filter == "all" || it.kind == filter }
 
-    fun quick(data: Map<String, Any?>) {
-        vm.saveEntry(baby.id, null, data) { id ->
-            scope.launch {
-                val r = snack.showSnackbar(savedText, actionLabel = undoText, duration = SnackbarDuration.Short)
-                if (r == SnackbarResult.ActionPerformed) vm.deleteEntry(baby.id, id)
-            }
-        }
-    }
+    val quick = rememberQuick(vm, baby, snack)
 
     LazyColumn(
         Modifier.fillMaxWidth(),
@@ -117,7 +108,7 @@ fun HomeScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
             Card(
                 Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                colors = CardDefaults.cardColors(containerColor = CRose, contentColor = Ink)
             ) {
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     if (timer != null) {
@@ -153,9 +144,11 @@ fun HomeScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
                                 val rec = s == nextSide
                                 Button(
                                     onClick = { vm.timer(baby, "start", side = s) },
-                                    modifier = Modifier.weight(1f).height(72.dp),
-                                    colors = if (rec) ButtonDefaults.buttonColors() else ButtonDefaults.filledTonalButtonColors()
-                                ) { Text(sideLabel(s), fontSize = 22.sp, fontWeight = FontWeight.Bold) }
+                                    modifier = Modifier.weight(1f).height(84.dp),
+                                    shape = RoundedCornerShape(22.dp),
+                                    colors = if (rec) ButtonDefaults.buttonColors(containerColor = Color(0xFFE8456B), contentColor = Color.White)
+                                    else ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Ink)
+                                ) { Text("🤱 " + sideLabel(s), fontSize = 22.sp, fontWeight = FontWeight.Bold) }
                             }
                         }
                     }
@@ -165,18 +158,27 @@ fun HomeScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
 
         // ----- sonno -----
         item {
-            Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp)) {
+            Card(
+                Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = CIndigo, contentColor = Ink)
+            ) {
                 Row(
-                    Modifier.padding(14.dp).fillMaxWidth(),
+                    Modifier.padding(16.dp).fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     if (sl != null) {
-                        Text("🌙 " + stringResource(R.string.sleeping, hDur(now - sl)))
-                        Button(onClick = { vm.sleep(baby, "stop") }) { Text(stringResource(R.string.sleep_stop)) }
+                        Text("🌙 " + stringResource(R.string.sleeping, hDur(now - sl)), fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                        Button(
+                            onClick = { vm.sleep(baby, "stop") }, modifier = Modifier.height(48.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A4FB3), contentColor = Color.White)
+                        ) { Text(stringResource(R.string.sleep_stop)) }
                     } else {
-                        Text("🌙 " + stringResource(R.string.type_sleep))
-                        FilledTonalButton(onClick = { vm.sleep(baby, "start") }) { Text(stringResource(R.string.sleep_start)) }
+                        Text("🌙 " + stringResource(R.string.type_sleep), fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                        Button(
+                            onClick = { vm.sleep(baby, "start") }, modifier = Modifier.height(48.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A4FB3), contentColor = Color.White)
+                        ) { Text(stringResource(R.string.sleep_start)) }
                     }
                 }
             }
@@ -184,37 +186,20 @@ fun HomeScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
 
         // ----- biberon / tiralatte -----
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Button(
-                    onClick = { sheet = SheetReq("biberon", null) },
-                    modifier = Modifier.weight(1f).height(54.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                ) { Text(stringResource(R.string.quick_bottle)) }
-                Button(
-                    onClick = { sheet = SheetReq("tiralatte", null) },
-                    modifier = Modifier.weight(1f).height(54.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                ) { Text(stringResource(R.string.quick_pump)) }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                BigTile("🍼", stringResource(R.string.type_bottle), CBlue, Modifier.weight(1f)) { sheet = SheetReq("biberon", null) }
+                BigTile("🥛", stringResource(R.string.type_pump), CPurple, Modifier.weight(1f)) { sheet = SheetReq("tiralatte", null) }
             }
         }
 
-        // ----- azioni rapide -----
+        // ----- pannolino -----
         item {
-            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilledTonalButton(onClick = { quick(mapOf("type" to "pannolino", "t" to nowMs(), "kind" to "pipi")) }) {
-                    Text(stringResource(R.string.q_pee))
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                BigTile("💧", stringResource(R.string.diaper_pee), CYellow, Modifier.weight(1f)) {
+                    quick(mapOf("type" to "pannolino", "t" to nowMs(), "kind" to "pipi"))
                 }
-                FilledTonalButton(onClick = { quick(mapOf("type" to "pannolino", "t" to nowMs(), "kind" to "cacca")) }) {
-                    Text(stringResource(R.string.q_poop))
-                }
-                FilledTonalButton(onClick = { quick(mapOf("type" to "bagno", "t" to nowMs())) }) {
-                    Text(stringResource(R.string.q_bath))
-                }
-                FilledTonalButton(onClick = { sheet = SheetReq("rumore", null) }) {
-                    Text(stringResource(R.string.q_noise))
-                }
-                FilledTonalButton(onClick = { quick(mapOf("type" to "farmaco", "t" to nowMs(), "name" to VITD)) }) {
-                    Text(stringResource(R.string.q_vitd))
+                BigTile("💩", stringResource(R.string.diaper_poop), CBrown, Modifier.weight(1f)) {
+                    quick(mapOf("type" to "pannolino", "t" to nowMs(), "kind" to "cacca"))
                 }
             }
         }
@@ -227,7 +212,6 @@ fun HomeScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
                     InfoRow(stringResource(R.string.last_bottle), agoText(d.lastBottle?.let { now - it }))
                     InfoRow(stringResource(R.string.last_pump), agoText(d.lastPump?.let { now - it }))
                     InfoRow(stringResource(R.string.last_diaper), agoText(d.lastDiaper?.let { now - it }))
-                    InfoRow(stringResource(R.string.last_bath), agoText(d.lastBath?.let { now - it }))
                 }
             }
         }
@@ -245,7 +229,6 @@ fun HomeScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Stat(stringResource(R.string.q_pee_short), pees.toString())
                         Stat(stringResource(R.string.q_poop_short), poops.toString())
-                        Stat(stringResource(R.string.vitd), if (vitDone) "✓" else "—")
                     }
                 }
             }
@@ -257,7 +240,7 @@ fun HomeScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
                 val opts = listOf(
                     "all" to R.string.filter_all, "seno" to R.string.type_breast, "biberon" to R.string.type_bottle,
                     "tiralatte" to R.string.type_pump, "sonno" to R.string.type_sleep, "pannolino" to R.string.type_diaper,
-                    "bagno" to R.string.type_bath, "rumore" to R.string.type_noise, "farmaco" to R.string.type_med,
+                    "bagno" to R.string.type_bath, "farmaco" to R.string.type_med,
                     "febbre" to R.string.type_fever, "solido" to R.string.type_solid
                 )
                 for ((k, r) in opts) {
@@ -355,7 +338,6 @@ fun entryTitle(kind: String, e: Entry?, oz: Boolean, session: Session?): String 
     }
     "bagno" -> "🛁 " + stringResource(R.string.type_bath)
     "farmaco" -> "💊 " + medName(e?.name) + (if (!e?.dose.isNullOrBlank()) " · " + e?.dose else "")
-    "rumore" -> "🔊 " + noiseLabel(e?.name) + (if ((e?.dur ?: 0) > 0) " · " + ((e?.dur ?: 0) / 60).coerceAtLeast(1) + " min" else "")
     "solido" -> "🥣 " + (e?.name ?: "") + (if (e?.kind == "nuovo") " · " + stringResource(R.string.solid_new) else "")
     "febbre" -> "🌡 " + String.format(java.util.Locale.getDefault(), "%.1f °C", e?.temp ?: 0.0)
     "crescita" -> "📏 " + growthText(e)

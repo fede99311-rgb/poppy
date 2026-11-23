@@ -11,6 +11,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Poppy">
 
+        <!-- ID AdMob di TEST: sostituire con il proprio App ID AdMob -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-7987496381410095~8225962928" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

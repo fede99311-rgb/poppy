@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,18 +39,46 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun TimeAdjuster(label: String, value: Long, onChange: (Long) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    var tick by remember { mutableIntStateOf(0) }
+    var hh by remember(tick) { mutableStateOf(java.util.Calendar.getInstance().apply { timeInMillis = value }.get(java.util.Calendar.HOUR_OF_DAY).toString().padStart(2, '0')) }
+    var mm by remember(tick) { mutableStateOf(java.util.Calendar.getInstance().apply { timeInMillis = value }.get(java.util.Calendar.MINUTE).toString().padStart(2, '0')) }
+    fun apply(h: Int, m: Int) {
+        val c = java.util.Calendar.getInstance().apply { timeInMillis = value }
+        c.set(java.util.Calendar.HOUR_OF_DAY, h); c.set(java.util.Calendar.MINUTE, m); c.set(java.util.Calendar.SECOND, 0)
+        var t = c.timeInMillis
+        if (t > nowMs() + 60_000L) t -= 86_400_000L
+        onChange(t)
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(dateTimeStr(value), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            val steps = listOf(
-                "−1 d" to -86_400_000L, "−1 h" to -3_600_000L, "−10 m" to -600_000L,
-                "+10 m" to 600_000L, "+1 h" to 3_600_000L
+            AssistChip(onClick = { onChange(nowMs()); tick++ }, label = { Text(stringResource(R.string.now_label)) })
+            AssistChip(onClick = { onChange(nowMs() - 5 * 60_000L); tick++ }, label = { Text(stringResource(R.string.ago_5)) })
+            AssistChip(onClick = { onChange(nowMs() - 15 * 60_000L); tick++ }, label = { Text(stringResource(R.string.ago_15)) })
+            AssistChip(onClick = { onChange(nowMs() - 30 * 60_000L); tick++ }, label = { Text(stringResource(R.string.ago_30)) })
+            AssistChip(onClick = { onChange(nowMs() - 60 * 60_000L); tick++ }, label = { Text(stringResource(R.string.ago_60)) })
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = hh, onValueChange = { v ->
+                    val f = v.filter { it.isDigit() }.take(2); hh = f
+                    val h = f.toIntOrNull(); val m = mm.toIntOrNull()
+                    if (h != null && m != null && h in 0..23 && m in 0..59) apply(h, m)
+                },
+                label = { Text(stringResource(R.string.time_h)) }, singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f)
             )
-            for ((txt, delta) in steps) {
-                AssistChip(onClick = { onChange(minOf(value + delta, nowMs() + 60_000L)) }, label = { Text(txt) })
-            }
-            AssistChip(onClick = { onChange(nowMs()) }, label = { Text(stringResource(R.string.now_label)) })
+            Text(":", style = MaterialTheme.typography.titleLarge)
+            OutlinedTextField(
+                value = mm, onValueChange = { v ->
+                    val f = v.filter { it.isDigit() }.take(2); mm = f
+                    val h = hh.toIntOrNull(); val m = f.toIntOrNull()
+                    if (h != null && m != null && h in 0..23 && m in 0..59) apply(h, m)
+                },
+                label = { Text(stringResource(R.string.time_m)) }, singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f)
+            )
         }
     }
 }
@@ -109,7 +138,7 @@ fun EntrySheet(
     var mins by remember { mutableStateOf(if (e != null && e.dur > 0) ((e.dur / 60).coerceAtLeast(1)).toString() else "") }
     var note by remember { mutableStateOf(e?.note ?: "") }
     var dKind by remember { mutableStateOf(if (kind == "pannolino") (e?.kind ?: "pipi") else "") }
-    var name by remember { mutableStateOf(e?.name ?: (if (kind == "rumore") "rain" else "")) }
+    var name by remember { mutableStateOf(e?.name ?: "") }
     var dose by remember { mutableStateOf(e?.dose ?: "") }
     var isNew by remember { mutableStateOf(e?.kind == "nuovo") }
     var kg by remember { mutableStateOf(if (e != null && e.wG > 0) fmtNum(e.wG / 1000.0) else "") }
@@ -125,7 +154,6 @@ fun EntrySheet(
         "pannolino" -> stringResource(R.string.type_diaper)
         "bagno" -> stringResource(R.string.type_bath)
         "farmaco" -> stringResource(R.string.type_med)
-        "rumore" -> stringResource(R.string.type_noise)
         "solido" -> stringResource(R.string.type_solid)
         "crescita" -> stringResource(R.string.type_growth)
         "febbre" -> stringResource(R.string.type_fever)
@@ -224,22 +252,6 @@ fun EntrySheet(
                 Text(stringResource(R.string.med_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
 
-            // ----- rumore bianco -----
-            if (kind == "rumore") {
-                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    for (id in listOf("rain", "hairdryer", "waves", "fan", "shush", "other")) {
-                        FilterChip(selected = name == id, onClick = { name = id }, label = { Text(noiseLabel(id)) })
-                    }
-                }
-                OutlinedTextField(
-                    value = mins, onValueChange = { mins = it.filter { c -> c.isDigit() }.take(3) },
-                    label = { Text(stringResource(R.string.duration_min)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
             // ----- svezzamento -----
             if (kind == "solido") {
                 OutlinedTextField(
@@ -322,12 +334,6 @@ fun EntrySheet(
                             if (name.isBlank()) ok = false
                             data["name"] = name.trim()
                             if (dose.isNotBlank()) data["dose"] = dose.trim()
-                        }
-                        "rumore" -> {
-                            if (name.isBlank()) ok = false
-                            data["name"] = name
-                            val m = mins.toIntOrNull() ?: 0
-                            if (m > 0) data["dur"] = m * 60
                         }
                         "solido" -> {
                             if (name.isBlank()) ok = false

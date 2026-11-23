@@ -1,6 +1,19 @@
 package it.venturini.poppy
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -137,6 +150,47 @@ fun LineChart(title: String, points: List<Float>, summary: String, color: Color)
                 }
                 if (n > 1) drawPath(path, color, style = Stroke(width = 3.dp.toPx()))
                 points.forEachIndexed { i, v -> drawCircle(color, radius = 4.dp.toPx(), center = Offset(px(i), py(v))) }
+            }
+        }
+    }
+}
+
+val Ink = Color(0xFF1E1E2A)
+val CRose = Color(0xFFFFD3DE)
+val CBlue = Color(0xFFCFE6FF)
+val CPurple = Color(0xFFE3D6FF)
+val CYellow = Color(0xFFFFF0A8)
+val CBrown = Color(0xFFEBD3BF)
+val CMint = Color(0xFFCDF2DF)
+val COrange = Color(0xFFFFDDBD)
+val CIndigo = Color(0xFFD5DBFF)
+
+/** Grande tasto colorato con icona (emoji) e testo. */
+@Composable
+fun BigTile(emoji: String, label: String, bg: Color, modifier: Modifier = Modifier, height: Dp = 92.dp, onClick: () -> Unit) {
+    Box(
+        modifier.height(height).clip(RoundedCornerShape(24.dp)).background(bg).clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(emoji, fontSize = 32.sp)
+            Text(label, color = Ink, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+        }
+    }
+}
+
+/** Salva una voce al volo mostrando "Salvato · Annulla". */
+@Composable
+fun rememberQuick(vm: AppVM, baby: Baby, snack: SnackbarHostState): (Map<String, Any?>) -> Unit {
+    val scope = rememberCoroutineScope()
+    val savedText = stringResource(R.string.saved)
+    val undoText = stringResource(R.string.undo)
+    return { data ->
+        vm.saveEntry(baby.id, null, data) { id ->
+            scope.launch {
+                snack.currentSnackbarData?.dismiss()
+                val r = snack.showSnackbar(savedText, actionLabel = undoText, duration = SnackbarDuration.Short)
+                if (r == SnackbarResult.ActionPerformed) vm.deleteEntry(baby.id, id)
             }
         }
     }

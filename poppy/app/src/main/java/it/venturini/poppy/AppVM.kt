@@ -19,6 +19,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.MetadataChanges
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.WriteBatch
 import kotlinx.coroutines.delay
@@ -44,6 +45,8 @@ class AppVM : ViewModel() {
     var oz by mutableStateOf(false)
         private set
     var health by mutableStateOf<List<Entry>>(emptyList())
+    var ideas by mutableStateOf<List<Idea>>(emptyList())
+    private var ideasReg: ListenerRegistration? = null
     var themeMode by mutableStateOf(0)          // 0 sistema, 1 chiaro, 2 scuro
         private set
     var hourMode by mutableStateOf(0)           // 0 sistema, 1 24 h, 2 12 h
@@ -129,6 +132,7 @@ class AppVM : ViewModel() {
         babiesReg?.remove(); babiesReg = null
         entriesReg?.remove(); entriesReg = null
         healthReg?.remove(); healthReg = null
+        ideasReg?.remove(); ideasReg = null; ideas = emptyList()
         babies = emptyList(); entries = emptyList(); health = emptyList(); selectedId = null; babiesLoaded = false
     }
 
@@ -186,11 +190,13 @@ class AppVM : ViewModel() {
         val since = nowMs() - 30L * 24 * 3600 * 1000
         entriesReg = col(id).whereGreaterThanOrEqualTo("t", since)
             .orderBy("t", Query.Direction.DESCENDING)
-            .addSnapshotListener { s, _ ->
+            .addSnapshotListener(MetadataChanges.INCLUDE) { s, err ->
+                if (err != null) message = R.string.sync_error
                 if (s != null) entries = s.documents.map { parseEntry(it.id, it.data ?: emptyMap()) }
             }
         healthReg = col(id).whereIn("type", listOf("crescita", "tappa", "farmaco", "febbre", "solido", "bagno"))
-            .addSnapshotListener { s, _ ->
+            .addSnapshotListener(MetadataChanges.INCLUDE) { s, err ->
+                if (err != null) message = R.string.sync_error
                 if (s != null) health = s.documents.map { parseEntry(it.id, it.data ?: emptyMap()) }.sortedByDescending { it.t }
             }
     }
@@ -311,22 +317,85 @@ class AppVM : ViewModel() {
     }
 
     // ---------- registrazioni ----------
+    private val healthTypes = setOf("crescita", "tappa", "farmaco", "febbre", "solido", "bagno")
+
+    private fun putLocal(e: Entry) {
+        entries = (entries.filter { it.id != e.id } + e).sortedByDescending { it.t }
+        if (e.type in healthTypes) health = (health.filter { it.id != e.id } + e).sortedByDescending { it.t }
+    }
+
+    private fun dropLocal(id: String) {
+        entries = entries.filter { it.id != id }
+        health = health.filter { it.id != id }
+    }
+
     fun saveEntry(babyId: String, existingId: String?, data: Map<String, Any?>, onDone: (String) -> Unit) {
         val c = col(babyId)
         val ref = if (existingId != null) c.document(existingId) else c.document()
-        ref.set(data)
+        val clean = data.filterValues { it != null }
+        try { putLocal(parseEntry(ref.id, clean)) } catch (e: Exception) { }
+        ref.set(clean).addOnFailureListener {
+            message = R.string.save_failed
+            if (existingId == null) dropLocal(ref.id)
+        }
         onDone(ref.id)
     }
 
     fun deleteEntry(babyId: String, id: String) {
-        col(babyId).document(id).delete()
+        dropLocal(id)
+        col(babyId).document(id).delete().addOnFailureListener { message = R.string.save_failed }
     }
 
     fun deleteSession(babyId: String, segs: List<Entry>) {
+        val ids = segs.map { it.id }.toSet()
+        entries = entries.filter { it.id !in ids }
         val b = db.batch()
         for (s in segs) b.delete(col(babyId).document(s.id))
         b.commit()
     }
+
+
+    // ---------- idee e richieste ----------
+    fun listenIdeas() {
+        if (ideasReg != null) return
+        ideasReg = db.collection("ideas").orderBy("votes", Query.Direction.DESCENDING).limit(100)
+            .addSnapshotListener { s, err ->
+                if (err != null) message = R.string.sync_error
+                if (s != null) ideas = s.documents.map { d ->
+                    @Suppress("UNCHECKED_CAST")
+                    Idea(
+                        d.id, d.getString("text") ?: "", (d.getLong("votes") ?: 0L).toInt(),
+                        (d.get("voters") as? List<String>) ?: emptyList(),
+                        d.getString("author") ?: "", d.getString("status") ?: "open"
+                    )
+                }
+            }
+    }
+
+    fun submitIdea(text: String, onDone: () -> Unit) {
+        val uid = auth.currentUser?.uid ?: return
+        val t = text.trim().take(200)
+        if (t.length < 5) return
+        db.collection("ideas").document().set(
+            mapOf("text" to t, "author" to uid, "votes" to 1, "voters" to listOf(uid),
+                "status" to "open", "createdAt" to nowMs())
+        ).addOnSuccessListener { message = R.string.idea_thanks; onDone() }
+            .addOnFailureListener { message = R.string.save_failed }
+    }
+
+    fun voteIdea(i: Idea) {
+        val uid = auth.currentUser?.uid ?: return
+        if (uid in i.voters) return
+        db.collection("ideas").document(i.id).update(
+            mapOf("voters" to FieldValue.arrayUnion(uid), "votes" to FieldValue.increment(1))
+        ).addOnFailureListener { message = R.string.save_failed }
+    }
+
+    fun deleteIdea(i: Idea) {
+        db.collection("ideas").document(i.id).delete().addOnFailureListener { message = R.string.save_failed }
+    }
+
+    fun myUid(): String = auth.currentUser?.uid ?: ""
 
     // ---------- timer poppata (condiviso tra i telefoni) ----------
     private fun addSegment(b: WriteBatch, babyId: String, tm: TimerState, now: Long) {
@@ -513,3 +582,5 @@ class AppVM : ViewModel() {
         }
     }
 }
+
+data class Idea(val id: String, val text: String, val votes: Int, val voters: List<String>, val author: String, val status: String)

@@ -47,6 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 
 @Composable
@@ -258,12 +259,12 @@ fun MainHost(vm: AppVM, billing: Billing) {
             if (!settings) NavigationBar {
                 val items = listOf(
                     Triple("home", "🏠", R.string.tab_today), Triple("stats", "📊", R.string.tab_charts),
-                    Triple("health", "🩺", R.string.tab_health), Triple("growth", "🌱", R.string.tab_growth)
+                    Triple("more", "✨", R.string.tab_more)
                 )
                 for ((k, ic, lbl) in items) {
                     NavigationBarItem(
                         selected = tab == k, onClick = { tab = k },
-                        icon = { Text(ic) }, label = { Text(stringResource(lbl)) }
+                        icon = { Text(ic, fontSize = 22.sp) }, label = { Text(stringResource(lbl)) }
                     )
                 }
             }
@@ -273,8 +274,7 @@ fun MainHost(vm: AppVM, billing: Billing) {
             if (settings) SettingsScreen(vm, billing, baby, d) { settings = false }
             else when (tab) {
                 "stats" -> StatsScreen(vm, d)
-                "health" -> HealthScreen(vm) { sheet = it }
-                "growth" -> GrowthScreen(vm, baby) { sheet = it }
+                "more" -> MoreScreen(vm, baby, billing, snack) { sheet = it }
                 else -> HomeScreen(vm, baby, d, snack)
             }
         }

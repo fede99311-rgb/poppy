@@ -228,4 +228,36 @@
     <string name="unlocked_solids">Nuova sezione sbloccata: Svezzamento (scheda Tappe)</string>
     <string name="vitd">Vitamina D</string>
     <string name="w_last">Ultima poppata %1$s</string>
+    <string name="tab_more">Altro</string>
+    <string name="m_health">Salute e farmaci</string>
+    <string name="m_growth">Tappe e svezzamento</string>
+    <string name="m_support">Supporta Poppy</string>
+    <string name="m_ideas">Idee e richieste</string>
+    <string name="ago_5">5 min fa</string>
+    <string name="ago_15">15 min fa</string>
+    <string name="ago_30">30 min fa</string>
+    <string name="ago_60">1 h fa</string>
+    <string name="time_h">Ore</string>
+    <string name="time_m">Min</string>
+    <string name="save_failed">Impossibile salvare. Controlla la connessione.</string>
+    <string name="sync_error">Problema di sincronizzazione</string>
+    <string name="support_watch_ad">Guarda una pubblicità per supportare Poppy</string>
+    <string name="ad_loading">Carico la pubblicità…</string>
+    <string name="ad_thanks">Grazie per il supporto! 💛</string>
+    <string name="ad_unavailable">Nessuna pubblicità disponibile ora, riprova più tardi</string>
+    <string name="support_or_tip">Oppure lascia una mancia</string>
+    <string name="ads_note">Le pubblicità sono facoltative e compaiono solo se tocchi il pulsante.</string>
+    <string name="ideas_intro">Proponi un miglioramento. Le idee che arrivano ad almeno 10 voti le implemento.</string>
+    <string name="idea_hint">La tua idea (max 200 caratteri)</string>
+    <string name="idea_send">Invia idea</string>
+    <string name="idea_vote">Vota</string>
+    <string name="idea_voted">Votata</string>
+    <string name="idea_planned">In programma</string>
+    <string name="idea_done">Fatta</string>
+    <string name="idea_goal">%1$d / 10 voti</string>
+    <string name="idea_none">Ancora nessuna idea: scrivi la prima!</string>
+    <string name="idea_report">Segnala</string>
+    <string name="idea_thanks">Idea inviata, grazie!</string>
+    <string name="idea_report_subject">Poppy – segnalazione idea</string>
+    <string name="contact_email" translatable="false">fede99311@gmail.com</string>
 </resources>

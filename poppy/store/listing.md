@@ -1,7 +1,7 @@
 # Scheda Play Store
 
 Categoria: **Genitorialità** (Parenting). Tag: tracker bebè, poppate, allattamento.
-Pubblico di destinazione: **18+** (rivolta ai genitori, non ai bambini). Contiene annunci: **No**.
+Pubblico di destinazione: **18+** (rivolta ai genitori, non ai bambini). Contiene annunci: **Sì** (solo pubblicità con ricompensa facoltativa).
 
 ## Italiano
 **Titolo (max 30):** Poppy: pappe e nanna del bebè
@@ -20,7 +20,8 @@ Poppy è il diario semplice per i primi mesi: tutto in pochi tocchi, anche con u
 • Più bebè (gemelli o fratelli), nome personalizzabile
 • ml o oz, esportazione CSV
 • Funziona anche offline e si allinea appena torna la rete
-• Nessuna pubblicità. Gratis, con mancia facoltativa per sostenere lo sviluppo
+• Gratis, nessun banner: pubblicità solo se vuoi sostenere lo sviluppo (o con una mancia)
+• Proponi e vota nuove funzioni direttamente nell'app
 • Privacy: i dati sono visibili solo alla tua famiglia, puoi eliminarli quando vuoi
 
 Poppy è uno strumento di registro e non sostituisce il parere del pediatra.
@@ -42,7 +43,8 @@ Poppy is the simple log for the early months: everything in a few taps, even one
 • Multiple babies (twins or siblings), custom name
 • ml or oz, CSV export
 • Works offline and syncs when you are back online
-• No ads. Free, with an optional tip to support development
+• Free, no banners: ads only if you choose to support development (or leave a tip)
+• Suggest and vote on new features inside the app
 • Privacy: data is visible only to your family and you can delete it anytime
 
 Poppy is a logging tool and does not replace your pediatrician's advice.
