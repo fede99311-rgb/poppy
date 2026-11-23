@@ -270,4 +270,13 @@
     <string name="tab_history">History</string>
     <string name="hist_overview">Overview</string>
     <string name="hist_other">Other</string>
+    <string name="side_left_full">Left</string>
+    <string name="side_right_full">Right</string>
+    <string name="diary_label">Baby diary</string>
+    <string name="hist_feed">Feeds &amp; naps</string>
+    <string name="hist_pump">Pumped milk</string>
+    <string name="gap_before">%1$s since previous feed</string>
+    <string name="slept_in">slept %1$s</string>
+    <string name="hist_meals">%1$d feeds</string>
+    <string name="hist_breast_short">breast</string>
 </resources>

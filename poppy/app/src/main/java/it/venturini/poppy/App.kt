@@ -21,6 +21,8 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
@@ -237,26 +239,39 @@ fun MainHost(vm: AppVM, billing: Billing) {
         topBar = {
             if (!settings) {
                 Row(
-                    Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
+                    Modifier.fillMaxWidth().statusBarsPadding().padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom
                 ) {
                     Box {
-                        TextButton(onClick = { if (vm.babies.size > 1) menu = true }) {
-                            Column {
-                                Text(baby.name + if (vm.babies.size > 1) " ▾" else "", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                if (baby.birth != null) Text(ageText(baby.birth, nowMs()), style = MaterialTheme.typography.bodySmall)
-                            }
+                        Column(Modifier.clickable { if (vm.babies.size > 1) menu = true }) {
+                            Text(
+                                (if (baby.birth != null) ageText(baby.birth, nowMs()) else stringResource(R.string.diary_label)),
+                                color = pal.muted, fontSize = 14.sp, fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                baby.name + if (vm.babies.size > 1) " ▾" else "",
+                                fontSize = 34.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.7).sp, color = pal.ink
+                            )
                         }
                         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                             for (b in vm.babies) DropdownMenuItem(text = { Text(b.name) }, onClick = { menu = false; vm.selectBaby(b.id) })
                         }
                     }
-                    TextButton(onClick = { settings = true }) { Text("⚙ " + stringResource(R.string.settings)) }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            java.text.SimpleDateFormat("EEEE d MMMM", java.util.Locale.getDefault()).format(java.util.Date()).replaceFirstChar { it.uppercase() },
+                            color = pal.muted, fontSize = 14.sp, fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            "⚙ " + stringResource(R.string.settings), color = pal.muted, fontSize = 14.sp, fontWeight = FontWeight.Bold,
+                            modifier = Modifier.clickable { settings = true }.padding(top = 6.dp, bottom = 2.dp)
+                        )
+                    }
                 }
             }
         },
         bottomBar = {
-            if (!settings) NavigationBar {
+            if (!settings) NavigationBar(containerColor = pal.card) {
                 val items = listOf(
                     Triple("home", "🏠", R.string.tab_today), Triple("hist", "📋", R.string.tab_history), Triple("stats", "📊", R.string.tab_charts),
                     Triple("more", "✨", R.string.tab_more)
@@ -264,13 +279,14 @@ fun MainHost(vm: AppVM, billing: Billing) {
                 for ((k, ic, lbl) in items) {
                     NavigationBarItem(
                         selected = tab == k, onClick = { tab = k },
+                        colors = androidx.compose.material3.NavigationBarItemDefaults.colors(indicatorColor = pal.line, selectedTextColor = pal.ink, unselectedTextColor = pal.muted),
                         icon = { Text(ic, fontSize = 22.sp) }, label = { Text(stringResource(lbl)) }
                     )
                 }
             }
         }
     ) { pad ->
-        Box(Modifier.padding(pad).fillMaxSize()) {
+        Box(Modifier.padding(pad).then(if (settings) Modifier.statusBarsPadding() else Modifier).fillMaxSize()) {
             if (settings) SettingsScreen(vm, billing, baby, d) { settings = false }
             else when (tab) {
                 "hist" -> HistoryScreen(vm, baby, d, snack)

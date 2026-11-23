@@ -270,4 +270,13 @@
     <string name="tab_history">Storico</string>
     <string name="hist_overview">Generale</string>
     <string name="hist_other">Altro</string>
+    <string name="side_left_full">Sinistra</string>
+    <string name="side_right_full">Destra</string>
+    <string name="diary_label">Diario pappe</string>
+    <string name="hist_feed">Pasti e nanna</string>
+    <string name="hist_pump">Latte tirato</string>
+    <string name="gap_before">%1$s dal pasto prima</string>
+    <string name="slept_in">dormito %1$s</string>
+    <string name="hist_meals">%1$d pasti</string>
+    <string name="hist_breast_short">seno</string>
 </resources>

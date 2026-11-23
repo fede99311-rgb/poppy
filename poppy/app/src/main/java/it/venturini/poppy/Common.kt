@@ -197,42 +197,56 @@ fun rememberQuick(vm: AppVM, baby: Baby, snack: SnackbarHostState): (Map<String,
     }
 }
 
-val ChipShape = RoundedCornerShape(16.dp)
+val ChipShape = RoundedCornerShape(13.dp)
 
 @Composable
 fun chipColors() = androidx.compose.material3.FilterChipDefaults.filterChipColors(
-    containerColor = MaterialTheme.colorScheme.background,
-    labelColor = MaterialTheme.colorScheme.onSurface,
-    selectedContainerColor = Color(0xFFF1EFF8),
-    selectedLabelColor = Color(0xFF16151C)
+    containerColor = pal.bg,
+    labelColor = pal.ink,
+    selectedContainerColor = pal.ink,
+    selectedLabelColor = pal.card
 )
 
-/** Tasto stile webapp: quadrato colorato con icona + etichetta. */
 @Composable
-fun QuickTile(emoji: String, label: String, accent: Color, modifier: Modifier = Modifier, sub: String? = null, onClick: () -> Unit) {
-    Box(
-        modifier.clip(RoundedCornerShape(26.dp)).background(MaterialTheme.colorScheme.surfaceContainerHighest)
-            .clickable(onClick = onClick).padding(vertical = 18.dp, horizontal = 6.dp),
-        contentAlignment = Alignment.Center
+fun assistColors() = androidx.compose.material3.AssistChipDefaults.assistChipColors(
+    containerColor = pal.bg, labelColor = pal.ink
+)
+
+/** Tasto rapido come nella webapp: icona a linea in quadrato colorato + etichetta. */
+@Composable
+fun QuickTile(
+    icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, accent: Color, soft: Color,
+    modifier: Modifier = Modifier, sub: String? = null, onClick: () -> Unit
+) {
+    Column(
+        modifier.clip(RoundedCornerShape(20.dp)).background(pal.card).clickable(onClick = onClick)
+            .padding(top = 14.dp, bottom = 12.dp, start = 4.dp, end = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Box(
-                Modifier.size(60.dp).clip(RoundedCornerShape(18.dp)).background(accent.copy(alpha = 0.22f)),
-                contentAlignment = Alignment.Center
-            ) { Text(emoji, fontSize = 30.sp) }
-            Text(label, fontWeight = FontWeight.Bold, fontSize = 16.sp, maxLines = 1)
-            if (sub != null) Text(sub, color = accent, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, maxLines = 1)
+        Box(Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(soft), contentAlignment = Alignment.Center) {
+            androidx.compose.material3.Icon(icon, null, tint = accent, modifier = Modifier.size(24.dp))
         }
+        Text(label, fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 1, color = pal.ink)
+        if (sub != null) Text(sub, color = accent, fontWeight = FontWeight.ExtraBold, fontSize = 11.sp, maxLines = 1)
     }
 }
 
 @Composable
 fun StatChip(value: String, label: String, modifier: Modifier = Modifier) {
     Column(
-        modifier.clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(vertical = 14.dp),
+        modifier.clip(RoundedCornerShape(16.dp)).background(pal.card).padding(top = 12.dp, bottom = 10.dp, start = 2.dp, end = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(value, fontWeight = FontWeight.ExtraBold, fontSize = 24.sp)
-        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp, maxLines = 1)
+        Text(value, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, maxLines = 1, color = pal.ink)
+        Text(label, color = pal.muted, fontSize = 10.5.sp, fontWeight = FontWeight.Bold, maxLines = 1)
     }
+}
+
+/** Pulsante pieno come .btn della webapp. */
+@Composable
+fun PBtn(text: String, bg: Color, fg: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Box(
+        modifier.clip(RoundedCornerShape(18.dp)).background(bg).clickable(onClick = onClick).padding(vertical = 17.dp, horizontal = 6.dp),
+        contentAlignment = Alignment.Center
+    ) { Text(text, color = fg, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, maxLines = 1) }
 }

@@ -39,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -61,11 +62,11 @@ fun TimeAdjuster(label: String, value: Long, onChange: (Long) -> Unit) {
         Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(dateTimeStr(value), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            AssistChip(onClick = { onChange(nowMs()); tick++ }, label = { Text(stringResource(R.string.now_label)) })
-            AssistChip(onClick = { onChange(nowMs() - 5 * 60_000L); tick++ }, label = { Text(stringResource(R.string.ago_5)) })
-            AssistChip(onClick = { onChange(nowMs() - 15 * 60_000L); tick++ }, label = { Text(stringResource(R.string.ago_15)) })
-            AssistChip(onClick = { onChange(nowMs() - 30 * 60_000L); tick++ }, label = { Text(stringResource(R.string.ago_30)) })
-            AssistChip(onClick = { onChange(nowMs() - 60 * 60_000L); tick++ }, label = { Text(stringResource(R.string.ago_60)) })
+            AssistChip(colors = assistColors(), border = null, shape = ChipShape, onClick = { onChange(nowMs()); tick++ }, label = { Text(stringResource(R.string.now_label)) })
+            AssistChip(colors = assistColors(), border = null, shape = ChipShape, onClick = { onChange(nowMs() - 5 * 60_000L); tick++ }, label = { Text(stringResource(R.string.ago_5)) })
+            AssistChip(colors = assistColors(), border = null, shape = ChipShape, onClick = { onChange(nowMs() - 15 * 60_000L); tick++ }, label = { Text(stringResource(R.string.ago_15)) })
+            AssistChip(colors = assistColors(), border = null, shape = ChipShape, onClick = { onChange(nowMs() - 30 * 60_000L); tick++ }, label = { Text(stringResource(R.string.ago_30)) })
+            AssistChip(colors = assistColors(), border = null, shape = ChipShape, onClick = { onChange(nowMs() - 60 * 60_000L); tick++ }, label = { Text(stringResource(R.string.ago_60)) })
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             OutlinedTextField(
@@ -116,8 +117,8 @@ fun SheetHost(vm: AppVM, baby: Baby, snack: SnackbarHostState, req: SheetReq?, o
 @Composable
 private fun SideChips(side: String, both: Boolean, onPick: (String) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = side == "sx", onClick = { onPick("sx") }, label = { Text(stringResource(R.string.side_left)) })
-        FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = side == "dx", onClick = { onPick("dx") }, label = { Text(stringResource(R.string.side_right)) })
+        FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = side == "sx", onClick = { onPick("sx") }, label = { Text(stringResource(R.string.side_left_full)) })
+        FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = side == "dx", onClick = { onPick("dx") }, label = { Text(stringResource(R.string.side_right_full)) })
         if (both) FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = side == "both", onClick = { onPick("both") }, label = { Text(stringResource(R.string.side_both)) })
     }
 }
@@ -168,12 +169,23 @@ fun EntrySheet(
         else -> stringResource(R.string.type_sleep)
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss, containerColor = pal.card, contentColor = pal.ink,
+        shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
+    ) {
         Column(
             Modifier.padding(horizontal = 20.dp).padding(bottom = 28.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            val kEmoji = when (kind) {
+                "biberon" -> "🍼"; "tiralatte" -> "🥛"; "seno" -> "🤱"; "pannolino" -> "💧"; "sonno" -> "🌙"
+                "bagno" -> "🛁"; "farmaco" -> "💊"; "solido" -> "🥣"; "crescita" -> "📏"; "febbre" -> "🌡"; else -> "✏️"
+            }
+            val kSoft = when (kind) { "biberon" -> pal.botSoft; "tiralatte" -> pal.pumpSoft; "seno" -> pal.sxSoft; "sonno" -> pal.napSoft; else -> pal.line }
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(Modifier.size(40.dp).clip(RoundedCornerShape(13.dp)).background(kSoft), contentAlignment = Alignment.Center) { Text(kEmoji, fontSize = 20.sp) }
+                Text(title, fontSize = 23.sp, fontWeight = FontWeight.ExtraBold, color = pal.ink)
+            }
 
             if (e == null && kind == "biberon" && lastBottle != null) {
                 Text(
@@ -199,28 +211,28 @@ fun EntrySheet(
             if (kind == "biberon" || kind == "tiralatte") {
                 val stepBy = if (oz) 0.5 else 10.0
                 Row(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(MaterialTheme.colorScheme.background).padding(10.dp),
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(pal.bg).padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Box(
-                        Modifier.size(84.dp).clip(RoundedCornerShape(24.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                        Modifier.size(58.dp).clip(RoundedCornerShape(16.dp)).background(pal.card)
                             .clickable { val v = (amount.replace(',', '.').toDoubleOrNull() ?: 0.0) - stepBy; amount = fmtNum(v.coerceAtLeast(0.0)); bad = false },
                         contentAlignment = Alignment.Center
-                    ) { Text("−", fontSize = 40.sp, fontWeight = FontWeight.Bold) }
+                    ) { Text("−", fontSize = 30.sp, fontWeight = FontWeight.Bold) }
                     Row(verticalAlignment = Alignment.Bottom) {
-                        Text(amount.ifBlank { "0" }, fontSize = 64.sp, fontWeight = FontWeight.ExtraBold, color = if (bad) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
-                        Text(" " + unitLabel(oz), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 12.dp))
+                        Text(amount.ifBlank { "0" }, fontSize = 44.sp, fontWeight = FontWeight.ExtraBold, color = if (bad) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
+                        Text(" " + unitLabel(oz), fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = pal.muted, modifier = Modifier.padding(bottom = 8.dp))
                     }
                     Box(
-                        Modifier.size(84.dp).clip(RoundedCornerShape(24.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                        Modifier.size(58.dp).clip(RoundedCornerShape(16.dp)).background(pal.card)
                             .clickable { val v = (amount.replace(',', '.').toDoubleOrNull() ?: 0.0) + stepBy; amount = fmtNum(v); bad = false },
                         contentAlignment = Alignment.Center
-                    ) { Text("+", fontSize = 40.sp, fontWeight = FontWeight.Bold) }
+                    ) { Text("+", fontSize = 30.sp, fontWeight = FontWeight.Bold) }
                 }
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     val quick = if (oz) listOf(2.0, 3.0, 4.0, 5.0, 6.0) else listOf(30.0, 60.0, 90.0, 120.0, 150.0)
                     for (q in quick) {
-                        FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = amount == fmtNum(q), onClick = { amount = fmtNum(q); bad = false }, label = { Text(fmtNum(q), fontSize = 18.sp, modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)) })
+                        FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = amount == fmtNum(q), onClick = { amount = fmtNum(q); bad = false }, label = { Text(fmtNum(q), fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(vertical = 6.dp, horizontal = 2.dp)) })
                     }
                 }
             }
@@ -383,9 +395,15 @@ fun EntrySheet(
                     if (note.isNotBlank() && kind != "sonno" && kind != "crescita") data["note"] = note.trim()
                     if (ok) vm.saveEntry(babyId, e?.id, data, onSaved) else bad = true
                 },
-                modifier = Modifier.fillMaxWidth().height(64.dp),
-                shape = RoundedCornerShape(22.dp)
-            ) { Text(stringResource(R.string.save), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold) }
+                modifier = Modifier.fillMaxWidth().height(60.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = when (kind) {
+                        "biberon" -> pal.bot; "tiralatte" -> pal.pump; "sonno" -> pal.nap; "seno" -> pal.sx; else -> pal.ink
+                    },
+                    contentColor = if (kind == "biberon" || kind == "tiralatte" || kind == "sonno" || kind == "seno") Color.White else pal.card
+                )
+            ) { Text(stringResource(R.string.save), fontSize = 18.sp, fontWeight = FontWeight.ExtraBold) }
 
             if (e != null) {
                 TextButton(
