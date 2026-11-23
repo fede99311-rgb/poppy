@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
@@ -170,11 +171,12 @@ fun EntrySheet(
     }
 
     ModalBottomSheet(
-        onDismissRequest = onDismiss, containerColor = pal.card, contentColor = pal.ink,
+        onDismissRequest = onDismiss, sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = pal.card, contentColor = pal.ink,
         shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
     ) {
         Column(
-            Modifier.padding(horizontal = 20.dp).padding(bottom = 28.dp).verticalScroll(rememberScrollState()),
+            Modifier.padding(horizontal = 20.dp).navigationBarsPadding().padding(bottom = 28.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             val kEmoji = when (kind) {
