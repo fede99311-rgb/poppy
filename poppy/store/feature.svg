@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 500" width="1024" height="500">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5B5BD6"/><stop offset="1" stop-color="#8E7CF0"/></linearGradient></defs>
+  <rect width="1024" height="500" fill="url(#g)"/>
+  <g transform="translate(110,100) scale(3.4)">
+    <path fill="#FFFFFF" d="M54,28 C54,28 38,46 38,58 A16,16 0 0 0 70,58 C70,46 54,28 54,28 Z"/>
+    <path fill="#C9C9FF" d="M43,60 a4,4 0 1 0 8,0 a4,4 0 1 0 -8,0 Z"/>
+    <path fill="#FFFFFF" d="M76,36 L78,41 L83,43 L78,45 L76,50 L74,45 L69,43 L74,41 Z"/>
+  </g>
+  <text x="430" y="235" font-family="Inter, DejaVu Sans, sans-serif" font-weight="700" font-size="120" fill="#FFFFFF">Poppy</text>
+  <text x="434" y="300" font-family="Inter, DejaVu Sans, sans-serif" font-size="38" fill="#EDEBFF">Feeds · pumping · sleep</text>
+  <text x="434" y="350" font-family="Inter, DejaVu Sans, sans-serif" font-size="38" fill="#EDEBFF">Pappe · tiralatte · nanna</text>
+</svg>

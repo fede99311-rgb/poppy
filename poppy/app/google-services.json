@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "110814976797",
+    "project_id": "poppy-c71a1",
+    "storage_bucket": "poppy-c71a1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:110814976797:android:4e52d23233917e1ddadff4",
+        "android_client_info": {
+          "package_name": "it.venturini.poppy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "110814976797-hobt6r1vttec39ldq93ek3e0r6e65d94.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "it.venturini.poppy",
+            "certificate_hash": "03344fc727740cb39e17270c92b0688c9f03a402"
+          }
+        },
+        {
+          "client_id": "110814976797-k0j753kcdfhhbdj72bj1k8kl22kdcc4u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2AsY0kJ6RGaW1mKm9tmvS4qr3OEIGVSM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "110814976797-k0j753kcdfhhbdj72bj1k8kl22kdcc4u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
