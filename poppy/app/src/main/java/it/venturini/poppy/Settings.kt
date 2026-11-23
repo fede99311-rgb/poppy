@@ -162,13 +162,13 @@ fun SettingsScreen(vm: AppVM, billing: Billing, baby: Baby, d: Derived, onBack: 
         Section(stringResource(R.string.nursing_section)) {
             Text(stringResource(R.string.min_dur_label), style = MaterialTheme.typography.bodySmall)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                for (v in listOf(3, 30, 60)) FilterChip(selected = vm.minDur == v, onClick = { vm.setMinDur(v) }, label = { Text("$v s") })
+                for (v in listOf(3, 30, 60)) FilterChip(selected = vm.minDur == v, onClick = { vm.changeMinDur(v) }, label = { Text("$v s") })
             }
             Text(stringResource(R.string.fixed_side_label), style = MaterialTheme.typography.bodySmall)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(selected = vm.fixedSide == "auto", onClick = { vm.setFixedSide("auto") }, label = { Text(stringResource(R.string.side_auto)) })
-                FilterChip(selected = vm.fixedSide == "sx", onClick = { vm.setFixedSide("sx") }, label = { Text(stringResource(R.string.side_left)) })
-                FilterChip(selected = vm.fixedSide == "dx", onClick = { vm.setFixedSide("dx") }, label = { Text(stringResource(R.string.side_right)) })
+                FilterChip(selected = vm.fixedSide == "auto", onClick = { vm.changeFixedSide("auto") }, label = { Text(stringResource(R.string.side_auto)) })
+                FilterChip(selected = vm.fixedSide == "sx", onClick = { vm.changeFixedSide("sx") }, label = { Text(stringResource(R.string.side_left)) })
+                FilterChip(selected = vm.fixedSide == "dx", onClick = { vm.changeFixedSide("dx") }, label = { Text(stringResource(R.string.side_right)) })
             }
         }
 
@@ -229,8 +229,8 @@ fun SettingsScreen(vm: AppVM, billing: Billing, baby: Baby, d: Derived, onBack: 
 
         Section(stringResource(R.string.units)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(selected = !vm.oz, onClick = { vm.setOz(false) }, label = { Text("ml") })
-                FilterChip(selected = vm.oz, onClick = { vm.setOz(true) }, label = { Text("oz") })
+                FilterChip(selected = !vm.oz, onClick = { vm.changeOz(false) }, label = { Text("ml") })
+                FilterChip(selected = vm.oz, onClick = { vm.changeOz(true) }, label = { Text("oz") })
             }
             OutlinedButton(onClick = {
                 scope.launch {
