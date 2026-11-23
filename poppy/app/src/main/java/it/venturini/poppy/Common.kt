@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -193,5 +194,45 @@ fun rememberQuick(vm: AppVM, baby: Baby, snack: SnackbarHostState): (Map<String,
                 if (r == SnackbarResult.ActionPerformed) vm.deleteEntry(baby.id, id)
             }
         }
+    }
+}
+
+val ChipShape = RoundedCornerShape(16.dp)
+
+@Composable
+fun chipColors() = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+    containerColor = MaterialTheme.colorScheme.background,
+    labelColor = MaterialTheme.colorScheme.onSurface,
+    selectedContainerColor = Color(0xFFF1EFF8),
+    selectedLabelColor = Color(0xFF16151C)
+)
+
+/** Tasto stile webapp: quadrato colorato con icona + etichetta. */
+@Composable
+fun QuickTile(emoji: String, label: String, accent: Color, modifier: Modifier = Modifier, sub: String? = null, onClick: () -> Unit) {
+    Box(
+        modifier.clip(RoundedCornerShape(26.dp)).background(MaterialTheme.colorScheme.surfaceContainerHighest)
+            .clickable(onClick = onClick).padding(vertical = 18.dp, horizontal = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Box(
+                Modifier.size(60.dp).clip(RoundedCornerShape(18.dp)).background(accent.copy(alpha = 0.22f)),
+                contentAlignment = Alignment.Center
+            ) { Text(emoji, fontSize = 30.sp) }
+            Text(label, fontWeight = FontWeight.Bold, fontSize = 16.sp, maxLines = 1)
+            if (sub != null) Text(sub, color = accent, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, maxLines = 1)
+        }
+    }
+}
+
+@Composable
+fun StatChip(value: String, label: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier.clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(vertical = 14.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(value, fontWeight = FontWeight.ExtraBold, fontSize = 24.sp)
+        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp, maxLines = 1)
     }
 }

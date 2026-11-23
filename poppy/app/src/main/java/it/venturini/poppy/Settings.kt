@@ -148,27 +148,27 @@ fun SettingsScreen(vm: AppVM, billing: Billing, baby: Baby, d: Derived, onBack: 
 
         Section(stringResource(R.string.appearance)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(selected = vm.themeMode == 0, onClick = { vm.setTheme(0) }, label = { Text(stringResource(R.string.theme_system)) })
-                FilterChip(selected = vm.themeMode == 1, onClick = { vm.setTheme(1) }, label = { Text(stringResource(R.string.theme_light)) })
-                FilterChip(selected = vm.themeMode == 2, onClick = { vm.setTheme(2) }, label = { Text(stringResource(R.string.theme_dark)) })
+                FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = vm.themeMode == 0, onClick = { vm.setTheme(0) }, label = { Text(stringResource(R.string.theme_system)) })
+                FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = vm.themeMode == 1, onClick = { vm.setTheme(1) }, label = { Text(stringResource(R.string.theme_light)) })
+                FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = vm.themeMode == 2, onClick = { vm.setTheme(2) }, label = { Text(stringResource(R.string.theme_dark)) })
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(selected = vm.hourMode == 0, onClick = { vm.setHours(0) }, label = { Text(stringResource(R.string.hours_auto)) })
-                FilterChip(selected = vm.hourMode == 1, onClick = { vm.setHours(1) }, label = { Text("24 h") })
-                FilterChip(selected = vm.hourMode == 2, onClick = { vm.setHours(2) }, label = { Text("12 h") })
+                FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = vm.hourMode == 0, onClick = { vm.setHours(0) }, label = { Text(stringResource(R.string.hours_auto)) })
+                FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = vm.hourMode == 1, onClick = { vm.setHours(1) }, label = { Text("24 h") })
+                FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = vm.hourMode == 2, onClick = { vm.setHours(2) }, label = { Text("12 h") })
             }
         }
 
         Section(stringResource(R.string.nursing_section)) {
             Text(stringResource(R.string.min_dur_label), style = MaterialTheme.typography.bodySmall)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                for (v in listOf(3, 30, 60)) FilterChip(selected = vm.minDur == v, onClick = { vm.changeMinDur(v) }, label = { Text("$v s") })
+                for (v in listOf(3, 30, 60)) FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = vm.minDur == v, onClick = { vm.changeMinDur(v) }, label = { Text("$v s") })
             }
             Text(stringResource(R.string.fixed_side_label), style = MaterialTheme.typography.bodySmall)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(selected = vm.fixedSide == "auto", onClick = { vm.changeFixedSide("auto") }, label = { Text(stringResource(R.string.side_auto)) })
-                FilterChip(selected = vm.fixedSide == "sx", onClick = { vm.changeFixedSide("sx") }, label = { Text(stringResource(R.string.side_left)) })
-                FilterChip(selected = vm.fixedSide == "dx", onClick = { vm.changeFixedSide("dx") }, label = { Text(stringResource(R.string.side_right)) })
+                FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = vm.fixedSide == "auto", onClick = { vm.changeFixedSide("auto") }, label = { Text(stringResource(R.string.side_auto)) })
+                FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = vm.fixedSide == "sx", onClick = { vm.changeFixedSide("sx") }, label = { Text(stringResource(R.string.side_left)) })
+                FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = vm.fixedSide == "dx", onClick = { vm.changeFixedSide("dx") }, label = { Text(stringResource(R.string.side_right)) })
             }
         }
 
@@ -177,6 +177,7 @@ fun SettingsScreen(vm: AppVM, billing: Billing, baby: Baby, d: Derived, onBack: 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for (hh in listOf(0, 2, 3, 4)) {
                     FilterChip(
+                        colors = chipColors(), border = null, shape = ChipShape,
                         selected = vm.remFeedH == hh,
                         onClick = { vm.setRemFeed(hh); if (hh > 0) askNotif() },
                         label = { Text(if (hh == 0) stringResource(R.string.off) else "$hh h") }
@@ -185,12 +186,13 @@ fun SettingsScreen(vm: AppVM, billing: Billing, baby: Baby, d: Derived, onBack: 
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
+                    colors = chipColors(), border = null, shape = ChipShape,
                     selected = vm.remVitD,
                     onClick = { vm.setRemVitD(!vm.remVitD, vm.vitdHour); if (!vm.remVitD) askNotif() },
                     label = { Text(stringResource(R.string.rem_vitd_label)) }
                 )
                 if (vm.remVitD) for (hh in listOf(8, 9, 12, 20)) {
-                    FilterChip(selected = vm.vitdHour == hh, onClick = { vm.setRemVitD(true, hh) }, label = { Text("$hh:00") })
+                    FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = vm.vitdHour == hh, onClick = { vm.setRemVitD(true, hh) }, label = { Text("$hh:00") })
                 }
             }
             Text(stringResource(R.string.rem_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -203,6 +205,7 @@ fun SettingsScreen(vm: AppVM, billing: Billing, baby: Baby, d: Derived, onBack: 
                 ) == BiometricManager.BIOMETRIC_SUCCESS
             }
             FilterChip(
+                colors = chipColors(), border = null, shape = ChipShape,
                 selected = vm.lockEnabled,
                 onClick = { if (canBio) vm.setLock(!vm.lockEnabled) else vm.message = R.string.lock_unavailable },
                 label = { Text(stringResource(R.string.lock_label)) }
@@ -229,8 +232,8 @@ fun SettingsScreen(vm: AppVM, billing: Billing, baby: Baby, d: Derived, onBack: 
 
         Section(stringResource(R.string.units)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(selected = !vm.oz, onClick = { vm.changeOz(false) }, label = { Text("ml") })
-                FilterChip(selected = vm.oz, onClick = { vm.changeOz(true) }, label = { Text("oz") })
+                FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = !vm.oz, onClick = { vm.changeOz(false) }, label = { Text("ml") })
+                FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = vm.oz, onClick = { vm.changeOz(true) }, label = { Text("oz") })
             }
             OutlinedButton(onClick = {
                 scope.launch {

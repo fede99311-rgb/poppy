@@ -53,7 +53,7 @@ fun StatsScreen(vm: AppVM, d: Derived) {
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             for (n in listOf(7, 14, 30)) {
-                FilterChip(selected = days == n, onClick = { days = n }, label = { Text(stringResource(R.string.days_n, n)) })
+                FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = days == n, onClick = { days = n }, label = { Text(stringResource(R.string.days_n, n)) })
             }
         }
         val avgLbl = stringResource(R.string.avg_per_day)

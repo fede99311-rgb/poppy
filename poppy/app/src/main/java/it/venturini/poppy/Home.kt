@@ -1,6 +1,11 @@
 package it.venturini.poppy
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.withStyle
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -71,8 +76,6 @@ fun HomeScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
         }
     }
     var sheet by remember { mutableStateOf<SheetReq?>(null) }
-    var sessionDlg by remember { mutableStateOf<Session?>(null) }
-    var filter by remember { mutableStateOf("all") }
 
     val entries = vm.entries
     val oz = vm.oz
@@ -94,61 +97,99 @@ fun HomeScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
     val sl = baby.sleepStart
     if (sl != null) sleepMs += (now - maxOf(sl, sod)).coerceAtLeast(0L)
 
-    val visible = d.items.filter { filter == "all" || it.kind == filter }
 
     val quick = rememberQuick(vm, baby, snack)
 
     LazyColumn(
         Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         // ----- poppata -----
         item {
             Card(
                 Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = CRose, contentColor = Ink)
+                shape = RoundedCornerShape(32.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest)
             ) {
-                Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(Modifier.padding(22.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (timer != null) {
                         val done = entries.filter { it.session == timer.session }.sumOf { it.dur }
                         val live = if (running) ((now - (timer.start ?: now)) / 1000).toInt() else 0
                         Text(
-                            if (running) stringResource(R.string.nursing_now, sideLabel(timer.side))
-                            else stringResource(R.string.paused),
-                            style = MaterialTheme.typography.titleMedium
+                            (if (running) stringResource(R.string.nursing_now, sideLabel(timer.side))
+                            else stringResource(R.string.paused)).uppercase(),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp, letterSpacing = 2.sp
                         )
-                        Text(clock((done + live).toLong()), fontSize = 52.sp, fontWeight = FontWeight.Bold)
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(clock((done + live).toLong()), fontSize = 64.sp, fontWeight = FontWeight.ExtraBold)
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             if (running) {
                                 val other = if (timer.side == "sx") "dx" else "sx"
-                                FilledTonalButton(onClick = { vm.timer(baby, "switch") }, modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.btn_switch_to, sideLabel(other)))
+                                FilledTonalButton(onClick = { vm.timer(baby, "switch") }, modifier = Modifier.weight(1f).height(56.dp), shape = RoundedCornerShape(18.dp)) {
+                                    Text(stringResource(R.string.btn_switch_to, sideLabel(other)), fontWeight = FontWeight.Bold)
                                 }
-                                OutlinedButton(onClick = { vm.timer(baby, "pause") }) { Text(stringResource(R.string.btn_pause)) }
+                                OutlinedButton(onClick = { vm.timer(baby, "pause") }, modifier = Modifier.height(56.dp), shape = RoundedCornerShape(18.dp)) { Text(stringResource(R.string.btn_pause)) }
                             } else {
-                                FilledTonalButton(onClick = { vm.timer(baby, "resume") }, modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.btn_resume))
+                                FilledTonalButton(onClick = { vm.timer(baby, "resume") }, modifier = Modifier.weight(1f).height(56.dp), shape = RoundedCornerShape(18.dp)) {
+                                    Text(stringResource(R.string.btn_resume), fontWeight = FontWeight.Bold)
                                 }
-                                OutlinedButton(onClick = { vm.timer(baby, "cancel") }) { Text(stringResource(R.string.btn_discard)) }
+                                OutlinedButton(onClick = { vm.timer(baby, "cancel") }, modifier = Modifier.height(56.dp), shape = RoundedCornerShape(18.dp)) { Text(stringResource(R.string.btn_discard)) }
                             }
                         }
-                        Button(onClick = { vm.timer(baby, "stop") }, modifier = Modifier.fillMaxWidth().height(50.dp)) {
-                            Text(stringResource(R.string.btn_done))
+                        Button(onClick = { vm.timer(baby, "stop") }, modifier = Modifier.fillMaxWidth().height(60.dp), shape = RoundedCornerShape(20.dp)) {
+                            Text(stringResource(R.string.btn_done), fontWeight = FontWeight.Bold, fontSize = 18.sp)
                         }
                     } else {
-                        Text(stringResource(R.string.next_side, sideLabel(nextSide)), style = MaterialTheme.typography.titleMedium)
-                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        val sideColor = if (nextSide == "sx") Color(0xFFE8756B) else Color(0xFF5B96D8)
+                        Text(
+                            stringResource(R.string.next_feed_title).uppercase(),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp, letterSpacing = 2.sp
+                        )
+                        val headFmt = stringResource(R.string.start_from, "\u0001")
+                        val headParts = headFmt.split("\u0001")
+                        Text(
+                            androidx.compose.ui.text.buildAnnotatedString {
+                                append(headParts[0])
+                                withStyle(androidx.compose.ui.text.SpanStyle(color = sideColor)) { append(sideLabel(nextSide).lowercase()) }
+                                if (headParts.size > 1) append(headParts[1])
+                            },
+                            fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 38.sp
+                        )
+                        val lastFeedT = d.lastFeed
+                        if (lastFeedT != null) {
+                            Text(
+                                stringResource(R.string.last_feed_at, agoText(now - lastFeedT), timeStr(lastFeedT)),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 17.sp
+                            )
+                        }
+                        Spacer(Modifier.height(10.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                             for (s in listOf("sx", "dx")) {
                                 val rec = s == nextSide
-                                Button(
-                                    onClick = { vm.timer(baby, "start", side = s) },
-                                    modifier = Modifier.weight(1f).height(84.dp),
-                                    shape = RoundedCornerShape(22.dp),
-                                    colors = if (rec) ButtonDefaults.buttonColors(containerColor = Color(0xFFE8456B), contentColor = Color.White)
-                                    else ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Ink)
-                                ) { Text("🤱 " + sideLabel(s), fontSize = 22.sp, fontWeight = FontWeight.Bold) }
+                                val col = if (s == "sx") Color(0xFFE8756B) else Color(0xFF5B96D8)
+                                val bg = if (s == "sx") Color(0xFF402A2E) else Color(0xFF223248)
+                                Box(Modifier.weight(1f), contentAlignment = Alignment.TopCenter) {
+                                    Box(
+                                        Modifier.fillMaxWidth().padding(top = 14.dp).height(150.dp)
+                                            .clip(RoundedCornerShape(30.dp)).background(bg)
+                                            .then(if (rec) Modifier.border(3.dp, col, RoundedCornerShape(30.dp)) else Modifier)
+                                            .clickable { vm.timer(baby, "start", side = s) },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            Text(s.uppercase(), color = col, fontSize = 54.sp, fontWeight = FontWeight.ExtraBold)
+                                            Text(sideLabel(s), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                                            Text("▶ " + stringResource(R.string.start_btn), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 17.sp)
+                                        }
+                                    }
+                                    if (rec) {
+                                        Box(Modifier.clip(RoundedCornerShape(50)).background(col).padding(horizontal = 16.dp, vertical = 6.dp)) {
+                                            Text(stringResource(R.string.her_turn).uppercase(), color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, letterSpacing = 1.sp)
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -156,58 +197,33 @@ fun HomeScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
             }
         }
 
-        // ----- sonno -----
+        // ----- tasti rapidi -----
         item {
-            Card(
-                Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = CIndigo, contentColor = Ink)
-            ) {
-                Row(
-                    Modifier.padding(16.dp).fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    if (sl != null) {
-                        Text("🌙 " + stringResource(R.string.sleeping, hDur(now - sl)), fontWeight = FontWeight.Bold, fontSize = 17.sp)
-                        Button(
-                            onClick = { vm.sleep(baby, "stop") }, modifier = Modifier.height(48.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A4FB3), contentColor = Color.White)
-                        ) { Text(stringResource(R.string.sleep_stop)) }
-                    } else {
-                        Text("🌙 " + stringResource(R.string.type_sleep), fontWeight = FontWeight.Bold, fontSize = 17.sp)
-                        Button(
-                            onClick = { vm.sleep(baby, "start") }, modifier = Modifier.height(48.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A4FB3), contentColor = Color.White)
-                        ) { Text(stringResource(R.string.sleep_start)) }
-                    }
-                }
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                QuickTile("🍼", stringResource(R.string.type_bottle), Color(0xFFE8A13C), Modifier.weight(1f)) { sheet = SheetReq("biberon", null) }
+                QuickTile("🥛", stringResource(R.string.type_pump), Color(0xFF9B7BE8), Modifier.weight(1f)) { sheet = SheetReq("tiralatte", null) }
+                QuickTile(
+                    "🌙", stringResource(R.string.tile_nap), Color(0xFF3FC59A), Modifier.weight(1f),
+                    sub = if (sl != null) hDur(now - sl) else null
+                ) { vm.sleep(baby, if (sl != null) "stop" else "start") }
             }
         }
-
-        // ----- biberon / tiralatte -----
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                BigTile("🍼", stringResource(R.string.type_bottle), CBlue, Modifier.weight(1f)) { sheet = SheetReq("biberon", null) }
-                BigTile("🥛", stringResource(R.string.type_pump), CPurple, Modifier.weight(1f)) { sheet = SheetReq("tiralatte", null) }
-            }
-        }
-
-        // ----- pannolino -----
-        item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                BigTile("💧", stringResource(R.string.diaper_pee), CYellow, Modifier.weight(1f)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                QuickTile("💧", stringResource(R.string.diaper_pee), Color(0xFFE8C84A), Modifier.weight(1f)) {
                     quick(mapOf("type" to "pannolino", "t" to nowMs(), "kind" to "pipi"))
                 }
-                BigTile("💩", stringResource(R.string.diaper_poop), CBrown, Modifier.weight(1f)) {
+                QuickTile("💩", stringResource(R.string.diaper_poop), Color(0xFFB88A5E), Modifier.weight(1f)) {
                     quick(mapOf("type" to "pannolino", "t" to nowMs(), "kind" to "cacca"))
                 }
+                Spacer(Modifier.weight(1f))
             }
         }
 
         // ----- tempo dall'ultimo ... -----
         item {
-            Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp)) {
-                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) {
+                Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     InfoRow(stringResource(R.string.last_feed), agoText(d.lastFeed?.let { now - it }))
                     InfoRow(stringResource(R.string.last_bottle), agoText(d.lastBottle?.let { now - it }))
                     InfoRow(stringResource(R.string.last_pump), agoText(d.lastPump?.let { now - it }))
@@ -218,92 +234,27 @@ fun HomeScreen(vm: AppVM, baby: Baby, d: Derived, snack: SnackbarHostState) {
 
         // ----- oggi -----
         item {
-            Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp)) {
-                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Stat(stringResource(R.string.stat_feeds), todayFeeds.toString())
-                        Stat(stringResource(R.string.stat_bottle), fmtVol(bottleMl, oz))
-                        Stat(stringResource(R.string.stat_pumped), fmtVol(pumpMl, oz))
-                        Stat(stringResource(R.string.stat_sleep), hDur(sleepMs))
-                    }
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Stat(stringResource(R.string.q_pee_short), pees.toString())
-                        Stat(stringResource(R.string.q_poop_short), poops.toString())
-                    }
-                }
-            }
+            Text(stringResource(R.string.today), fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(top = 6.dp))
         }
-
-        // ----- filtri -----
         item {
-            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                val opts = listOf(
-                    "all" to R.string.filter_all, "seno" to R.string.type_breast, "biberon" to R.string.type_bottle,
-                    "tiralatte" to R.string.type_pump, "sonno" to R.string.type_sleep, "pannolino" to R.string.type_diaper,
-                    "bagno" to R.string.type_bath, "farmaco" to R.string.type_med,
-                    "febbre" to R.string.type_fever, "solido" to R.string.type_solid
-                )
-                for ((k, r) in opts) {
-                    FilterChip(selected = filter == k, onClick = { filter = k }, label = { Text(stringResource(r)) })
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    StatChip(todayFeeds.toString(), stringResource(R.string.stat_feeds), Modifier.weight(1f))
+                    StatChip(fmtVol(bottleMl, oz), stringResource(R.string.stat_bottle), Modifier.weight(1f))
+                    StatChip(fmtVol(pumpMl, oz), stringResource(R.string.stat_pumped), Modifier.weight(1f))
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    StatChip(hDur(sleepMs), stringResource(R.string.stat_sleep), Modifier.weight(1f))
+                    StatChip(pees.toString(), stringResource(R.string.q_pee_short), Modifier.weight(1f))
+                    StatChip(poops.toString(), stringResource(R.string.q_poop_short), Modifier.weight(1f))
                 }
             }
         }
 
-        if (visible.isEmpty()) {
-            item { Text(stringResource(R.string.empty_history), color = MaterialTheme.colorScheme.onSurfaceVariant) }
-        }
-
-        var lastDay = -1L
-        for (row in visible) {
-            val day = startOfDay(row.t)
-            if (day != lastDay) {
-                lastDay = day
-                item(key = "h$day") {
-                    val label = when (day) {
-                        sod -> stringResource(R.string.today)
-                        startOfDay(sod - 1) -> stringResource(R.string.yesterday)
-                        else -> dayStr(day)
-                    }
-                    Text(label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp))
-                }
-            }
-            item(key = row.key) {
-                HistoryRow(row, d.gap[row.key], oz) {
-                    if (row.kind == "seno") sessionDlg = row.session
-                    else sheet = SheetReq(row.kind, row.entry)
-                }
-            }
-        }
         item { Spacer(Modifier.height(24.dp)) }
     }
 
     SheetHost(vm, baby, snack, sheet) { sheet = null }
-
-    val sd = sessionDlg
-    if (sd != null) {
-        AlertDialog(
-            onDismissRequest = { sessionDlg = null },
-            title = { Text(stringResource(R.string.session_title) + " · " + timeStr(sd.t)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    for (seg in sd.segs) {
-                        TextButton(onClick = { sessionDlg = null; sheet = SheetReq("seno", seg) }) {
-                            Text(sideLabel(seg.side) + " · " + (seg.dur / 60).coerceAtLeast(1) + " min · " + timeStr(seg.t))
-                        }
-                    }
-                    TextButton(onClick = { vm.deleteSession(baby.id, sd.segs); sessionDlg = null }) {
-                        Text(stringResource(R.string.delete_session), color = MaterialTheme.colorScheme.error)
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { vm.timer(baby, "resume", session = sd.id); sessionDlg = null }) {
-                    Text(stringResource(R.string.resume_session))
-                }
-            },
-            dismissButton = { TextButton(onClick = { sessionDlg = null }) { Text(stringResource(R.string.close)) } }
-        )
-    }
 }
 
 @Composable
@@ -365,8 +316,8 @@ fun HistoryRow(row: Item, gap: Long?, oz: Boolean, onClick: () -> Unit) {
         "sonno" -> sub = timeStr(row.t) + " – " + timeStr(e?.end ?: row.t)
     }
     if (e?.note?.isNotBlank() == true) sub = (if (sub.isEmpty()) "" else "$sub · ") + e.note
-    Card(Modifier.fillMaxWidth().clickable { onClick() }, shape = RoundedCornerShape(16.dp)) {
-        Row(Modifier.padding(12.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+    Card(Modifier.fillMaxWidth().clickable { onClick() }, shape = RoundedCornerShape(20.dp)) {
+        Row(Modifier.padding(16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(title, fontWeight = FontWeight.Medium)
                 if (sub.isNotEmpty()) Text(sub, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

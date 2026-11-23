@@ -260,4 +260,14 @@
     <string name="idea_thanks">Idea sent, thanks!</string>
     <string name="idea_report_subject">Poppy – report idea</string>
     <string name="contact_email" translatable="false">fede99311@gmail.com</string>
+    <string name="next_feed_title">Next feed</string>
+    <string name="start_from">Start with %1$s</string>
+    <string name="her_turn">Her turn</string>
+    <string name="start_btn">start</string>
+    <string name="last_feed_at">Last feed %1$s · at %2$s</string>
+    <string name="tile_nap">Nap</string>
+    <string name="tile_wake">Wake up</string>
+    <string name="tab_history">History</string>
+    <string name="hist_overview">Overview</string>
+    <string name="hist_other">Other</string>
 </resources>

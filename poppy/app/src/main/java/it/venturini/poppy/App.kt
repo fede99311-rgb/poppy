@@ -258,7 +258,7 @@ fun MainHost(vm: AppVM, billing: Billing) {
         bottomBar = {
             if (!settings) NavigationBar {
                 val items = listOf(
-                    Triple("home", "🏠", R.string.tab_today), Triple("stats", "📊", R.string.tab_charts),
+                    Triple("home", "🏠", R.string.tab_today), Triple("hist", "📋", R.string.tab_history), Triple("stats", "📊", R.string.tab_charts),
                     Triple("more", "✨", R.string.tab_more)
                 )
                 for ((k, ic, lbl) in items) {
@@ -273,6 +273,7 @@ fun MainHost(vm: AppVM, billing: Billing) {
         Box(Modifier.padding(pad).fillMaxSize()) {
             if (settings) SettingsScreen(vm, billing, baby, d) { settings = false }
             else when (tab) {
+                "hist" -> HistoryScreen(vm, baby, d, snack)
                 "stats" -> StatsScreen(vm, d)
                 "more" -> MoreScreen(vm, baby, billing, snack) { sheet = it }
                 else -> HomeScreen(vm, baby, d, snack)

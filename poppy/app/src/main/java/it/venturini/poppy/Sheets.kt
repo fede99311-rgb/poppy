@@ -1,6 +1,14 @@
 package it.venturini.poppy
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -108,9 +116,9 @@ fun SheetHost(vm: AppVM, baby: Baby, snack: SnackbarHostState, req: SheetReq?, o
 @Composable
 private fun SideChips(side: String, both: Boolean, onPick: (String) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilterChip(selected = side == "sx", onClick = { onPick("sx") }, label = { Text(stringResource(R.string.side_left)) })
-        FilterChip(selected = side == "dx", onClick = { onPick("dx") }, label = { Text(stringResource(R.string.side_right)) })
-        if (both) FilterChip(selected = side == "both", onClick = { onPick("both") }, label = { Text(stringResource(R.string.side_both)) })
+        FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = side == "sx", onClick = { onPick("sx") }, label = { Text(stringResource(R.string.side_left)) })
+        FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = side == "dx", onClick = { onPick("dx") }, label = { Text(stringResource(R.string.side_right)) })
+        if (both) FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = side == "both", onClick = { onPick("both") }, label = { Text(stringResource(R.string.side_both)) })
     }
 }
 
@@ -189,25 +197,38 @@ fun EntrySheet(
 
             // ----- biberon / tiralatte -----
             if (kind == "biberon" || kind == "tiralatte") {
-                OutlinedTextField(
-                    value = amount, onValueChange = { amount = it.take(6); bad = false },
-                    label = { Text(stringResource(R.string.amount, unitLabel(oz))) },
-                    singleLine = true, isError = bad,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                val stepBy = if (oz) 0.5 else 10.0
+                Row(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(MaterialTheme.colorScheme.background).padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Box(
+                        Modifier.size(84.dp).clip(RoundedCornerShape(24.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                            .clickable { val v = (amount.replace(',', '.').toDoubleOrNull() ?: 0.0) - stepBy; amount = fmtNum(v.coerceAtLeast(0.0)); bad = false },
+                        contentAlignment = Alignment.Center
+                    ) { Text("−", fontSize = 40.sp, fontWeight = FontWeight.Bold) }
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(amount.ifBlank { "0" }, fontSize = 64.sp, fontWeight = FontWeight.ExtraBold, color = if (bad) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
+                        Text(" " + unitLabel(oz), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 12.dp))
+                    }
+                    Box(
+                        Modifier.size(84.dp).clip(RoundedCornerShape(24.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                            .clickable { val v = (amount.replace(',', '.').toDoubleOrNull() ?: 0.0) + stepBy; amount = fmtNum(v); bad = false },
+                        contentAlignment = Alignment.Center
+                    ) { Text("+", fontSize = 40.sp, fontWeight = FontWeight.Bold) }
+                }
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     val quick = if (oz) listOf(2.0, 3.0, 4.0, 5.0, 6.0) else listOf(30.0, 60.0, 90.0, 120.0, 150.0)
                     for (q in quick) {
-                        AssistChip(onClick = { amount = fmtNum(q); bad = false }, label = { Text(fmtNum(q)) })
+                        FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = amount == fmtNum(q), onClick = { amount = fmtNum(q); bad = false }, label = { Text(fmtNum(q), fontSize = 18.sp, modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)) })
                     }
                 }
             }
             if (kind == "biberon") {
                 Text(stringResource(R.string.milk_type), style = MaterialTheme.typography.labelLarge)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterChip(selected = milk == "materno", onClick = { milk = "materno" }, label = { Text(stringResource(R.string.milk_breast)) })
-                    FilterChip(selected = milk == "formula", onClick = { milk = "formula" }, label = { Text(stringResource(R.string.milk_formula)) })
+                    FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = milk == "materno", onClick = { milk = "materno" }, label = { Text(stringResource(R.string.milk_breast)) })
+                    FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = milk == "formula", onClick = { milk = "formula" }, label = { Text(stringResource(R.string.milk_formula)) })
                 }
             }
             if (kind == "tiralatte") SideChips(side, true) { side = it }
@@ -227,16 +248,16 @@ fun EntrySheet(
             // ----- pannolino -----
             if (kind == "pannolino") {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterChip(selected = dKind == "pipi", onClick = { dKind = "pipi" }, label = { Text(stringResource(R.string.diaper_pee)) })
-                    FilterChip(selected = dKind == "cacca", onClick = { dKind = "cacca" }, label = { Text(stringResource(R.string.diaper_poop)) })
-                    FilterChip(selected = dKind == "entrambi", onClick = { dKind = "entrambi" }, label = { Text(stringResource(R.string.diaper_both)) })
+                    FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = dKind == "pipi", onClick = { dKind = "pipi" }, label = { Text(stringResource(R.string.diaper_pee)) })
+                    FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = dKind == "cacca", onClick = { dKind = "cacca" }, label = { Text(stringResource(R.string.diaper_poop)) })
+                    FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = dKind == "entrambi", onClick = { dKind = "entrambi" }, label = { Text(stringResource(R.string.diaper_both)) })
                 }
             }
 
             // ----- farmaco -----
             if (kind == "farmaco") {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterChip(selected = name == VITD, onClick = { name = VITD; bad = false }, label = { Text(stringResource(R.string.vitd)) })
+                    FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = name == VITD, onClick = { name = VITD; bad = false }, label = { Text(stringResource(R.string.vitd)) })
                 }
                 OutlinedTextField(
                     value = if (name == VITD) stringResource(R.string.vitd) else name,
@@ -259,7 +280,7 @@ fun EntrySheet(
                     label = { Text(stringResource(R.string.solid_food)) },
                     singleLine = true, isError = bad, modifier = Modifier.fillMaxWidth()
                 )
-                FilterChip(selected = isNew, onClick = { isNew = !isNew }, label = { Text(stringResource(R.string.solid_new)) })
+                FilterChip(colors = chipColors(), border = null, shape = ChipShape, selected = isNew, onClick = { isNew = !isNew }, label = { Text(stringResource(R.string.solid_new)) })
             }
 
             // ----- crescita -----
@@ -362,8 +383,9 @@ fun EntrySheet(
                     if (note.isNotBlank() && kind != "sonno" && kind != "crescita") data["note"] = note.trim()
                     if (ok) vm.saveEntry(babyId, e?.id, data, onSaved) else bad = true
                 },
-                modifier = Modifier.fillMaxWidth().height(52.dp)
-            ) { Text(stringResource(R.string.save)) }
+                modifier = Modifier.fillMaxWidth().height(64.dp),
+                shape = RoundedCornerShape(22.dp)
+            ) { Text(stringResource(R.string.save), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold) }
 
             if (e != null) {
                 TextButton(
