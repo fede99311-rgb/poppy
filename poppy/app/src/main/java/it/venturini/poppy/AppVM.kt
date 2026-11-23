@@ -100,8 +100,8 @@ class AppVM : ViewModel() {
         use24h = when (v) { 1 -> true; 2 -> false; else -> null }
         prefs?.edit()?.putInt("hours", v)?.apply()
     }
-    fun setMinDur(v: Int) { minDur = v; prefs?.edit()?.putInt("min_dur", v)?.apply() }
-    fun setFixedSide(v: String) { fixedSide = v; prefs?.edit()?.putString("fixed_side", v)?.apply() }
+    fun changeMinDur(v: Int) { minDur = v; prefs?.edit()?.putInt("min_dur", v)?.apply() }
+    fun changeFixedSide(v: String) { fixedSide = v; prefs?.edit()?.putString("fixed_side", v)?.apply() }
     fun setLock(v: Boolean) { lockEnabled = v; prefs?.edit()?.putBoolean("lock", v)?.apply() }
     fun setRemFeed(h: Int) { remFeedH = h; prefs?.edit()?.putInt("rem_feed_h", h)?.apply() }
     fun setRemVitD(on: Boolean, hour: Int) {
@@ -115,7 +115,7 @@ class AppVM : ViewModel() {
             ?.putLong("lastFeed", lastFeed ?: 0L)?.putString("nextSide", nextSide)?.apply()
     }
 
-    fun setOz(v: Boolean) {
+    fun changeOz(v: Boolean) {
         oz = v
         prefs?.edit()?.putBoolean("oz", v)?.apply()
     }
